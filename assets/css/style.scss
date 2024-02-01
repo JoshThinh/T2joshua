@@ -235,3 +235,27 @@ span.psw {
   display: table;
 }
 
+.icon2 {
+  padding: 10px;
+  background: dodgerblue;
+  color: white;
+  min-width: 50px;
+  text-align: center;
+}
+.input-container2 {
+  display: -ms-flexbox; /* IE10 */
+  display: flex;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.input-field2 {
+  width: 100%;
+  padding: 10px;
+  outline: none;
+}
+
+.input-field2:focus {
+  border: 2px solid dodgerblue;
+}
+

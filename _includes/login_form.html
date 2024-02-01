@@ -1,3 +1,22 @@
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div class="input-container2">
+  <i class="fa fa-key icon2"></i>
+  <div class="input-field2">Authorized : <span id="myText"></span></div>
+</div>
+<div class="input-container2">
+  <i class="fa fa-user icon2"></i>
+  <div class="input-field2" >username : <span id="usernamelabel"></span></div>
+</div>
+
+<div class="input-container2">
+  <i class="fa fa-envelope icon2"></i>
+  <div class="input-field2" >email : <span id="emaillabel"></span></div>
+</div>
+
+</div>
 <div id="login" class="Box box-shadow-medium rounded-1 col-12">
 
   <div class="center-div">
@@ -21,7 +40,7 @@
       
         <div class="container" style="background-color:#f1f1f1">
           <button onclick="document.getElementById('id01').style.display='block'" style="width:auto;">Sign Up</button>
-          <span class="psw">Authorized: <span id="myText"></span> </span>
+        
         </div>
       </form>
   </div>
@@ -35,8 +54,15 @@
       <h1>Sign Up</h1>
       <p>Please fill in this form to create an account.</p>
       <hr>
-      <label for="email"><b>Email</b></label>
+      <label for="username"><b>Username</b></label>
       <input type="text" placeholder="Enter UserName" name="usn" required>
+
+      <label for="name"><b>name</b></label>
+      <input type="text" placeholder="Enter Name" name="name" required>
+
+
+      <label for="email"><b>Email</b></label>
+      <input type="text" placeholder="Enter Email" name="email" required>
 
       <label for="psw"><b>Password</b></label>
       <input type="password" placeholder="Enter Password" name="psw" required>
@@ -54,23 +80,30 @@
 </div>
 
 <script>
-  let authtoken = window.sessionStorage.getItem("authtoken");
+  <!-- var item = sessionStorage.getItem('authData')
+  var authtoken = item ? JSON.parse(item) : {}
   var authorize = "false"
   document.getElementById("myText").innerHTML = authorize;
-  //authorizeAPI(3,"","");
+  if(authtoken.id){
+  //  authorizeAPI(authtoken);
+  } -->
 
-  async function authorizeAPI(id, username, password) {
-    const response3 = await fetch('http://127.0.0.1:8199/authorize', {
+
+  async function authorizeAPI(authData) {
+    const response3 = await fetch('http://127.0.0.1:8199/authenticate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ "id":id, "username":username, "password":password }),
+      body: JSON.stringify({ "id":authData.id, "username":authData.username, "password":authData.password }),
     });
 
     const data3 = await response3.json();
-    if (response.ok) {
+    if (response3.ok) {
       authorize = "true"
+      document.getElementById("myText").innerHTML = authorize;
+      document.getElementById("usernamelabel").innerHTML = data3.username;
+      document.getElementById("emaillabel").innerHTML = data3.email;
     } else  {
       authorize = "false"
     }  
@@ -92,17 +125,19 @@
     })
 
     async function loginUser(username, password) {
-      const response = await fetch('http://127.0.0.1:8199/login', {
+      const response = await fetch('http://127.0.0.1:8199/api/users/authenticate', {
         method: 'POST',
+        cache: 'no-cache', // Set the cache property
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ "username":username, "password":password }),
+        body: JSON.stringify({ "uid":username, "password":password }),
       });
     
-      const data = await response.json();
+      //const data = await response.json();
       if (response.ok) {
         alert("You have successfully logged in.");
+        //window.login_user = JSON.stringify(data);
         window.location.replace("/T2joshua/")
       } else if (response.status === 401) {
         loginErrorMsg.style.opacity = 1;
@@ -110,6 +145,10 @@
         loginErrorMsg.style.opacity = 1;
       } else if (response.status === 404) {
         loginErrorMsg.style.opacity = 1;
+      }else{
+        loginErrorMsg.style.opacity = 1;
+        const errorMsg = 'Login error: ' + response.status;
+        console.log(errorMsg);
       }  
     }  
 
@@ -119,13 +158,6 @@
 <script>
   // Get the modal
   var modal = document.getElementById('id01');
-  
-  // When the user clicks anywhere outside of the modal, close it
-//  window.onclick = function(event) {
- //   if (event.target == modal) {
- //     modal.style.display = "none";
- //   }
- // }
 
   const signupForm = document.getElementById("signup-form");
   const signupButton = document.getElementById("signup-form-submit");
@@ -133,17 +165,20 @@
   signupButton.addEventListener("click", (e) => {
     e.preventDefault();
     const username = signupForm.usn.value;
+    const name = signupForm.name.value;
     const password = signupForm.psw.value;
+    const email = signupForm.email.value;
 
-    signup(username, password)
+    signup(username, password, email, name)
   })
-  async function signup(username, password) {
-    const response2 = await fetch('http://127.0.0.1:8199/signUp', {
+  async function signup(username, password, email, name) {
+    const response2 = await fetch('http://127.0.0.1:8199/api/users/create', {
       method: 'POST',
+      cache: 'no-cache', // Set the cache property
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ "username":username, "password":password }),
+      body: JSON.stringify({ "name":name,"uid":username, "password":password, "email":email }),
     });
   
     const data2 = await response2.json();
