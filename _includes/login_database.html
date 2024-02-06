@@ -1,0 +1,328 @@
+
+<!-- HTML table layout for page.  The table is filled by JavaScript below. 
+-->
+
+<form class="modal-content" id="signup-form"  action="javascript:signup_user()" >
+  <div class="container">
+    <h1>Sign Up</h1>
+    <p>Please fill in this form to create an account.</p>
+    <hr>
+    <label for="username"><b>Username</b></label>
+    <input type="text" placeholder="Enter UserName" name="usn" id="usn" required>
+
+    <label for="name"><b>name</b></label>
+    <input type="text" placeholder="Enter Name" name="name" id="name" required>
+
+
+    <label for="email"><b>Email</b></label>
+    <input type="text" placeholder="Enter Email" name="email" id="email" required>
+
+    <label for="psw"><b>Password</b></label>
+    <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
+    
+
+    <div class="clearfix">
+      <button type="submit" class="signupbtn" id="signup-form-submit">Sign Up</button>
+    </div>
+  </div>
+</form>
+
+
+<div class="container">
+<table id="userTable">
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th>ID</th>
+    <th>Age</th>
+    <th>Email</th>
+    <th>Role</th>
+    <th>Edit</th>
+		<th>Delete</th>
+  </tr>
+  </thead>
+  <tbody id="result">
+    <!-- javascript generated data -->
+  </tbody>
+</table>
+</div>
+
+<!-- 
+Below JavaScript code fetches user data from an API and displays it in a table. It uses the Fetch API to make a GET request to the '/api/users/' endpoint.   Refer to config.js to see additional options. 
+
+The script is laid out in a sequence (no function) and will execute when page is loaded.
+-->
+<script type="module">
+  // uri variable and options object are obtained from config.js
+ import { uri, options } from '{{site.baseurl}}/assets/js/api/config.js';
+
+  // Set Users endpoint (list of users)
+  const url = uri + '/api/users/';
+
+  let users = [];
+  
+
+  // prepare HTML result container for new output
+  const resultContainer = document.getElementById("result");
+
+        // Change options according to Authentication requirements
+       
+  fetchUsers();
+  function fetchUsers() {
+    // fetch the API
+    fetch(url, options)
+      // response is a RESTful "promise" on any successful fetch
+      .then(response => {
+        // check for response errors and display
+        if (response.status !== 200) {
+            const errorMsg = 'Database response error: ' + response.status;
+            console.log(errorMsg);
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.innerHTML = errorMsg;
+            tr.appendChild(td);
+            resultContainer.appendChild(tr);
+            window.location.replace("/T2joshua/login");
+        }
+        // valid response will contain JSON data
+        response.json().then(data => {
+            console.log(data);
+            users = data;
+            for (const row of data) {
+              // tr and td build out for each row
+              const tr = document.createElement("tr");
+              const name = document.createElement("td");
+              const id = document.createElement("td");
+              const age = document.createElement("td");
+              const email = document.createElement("td");
+              const role = document.createElement("td");
+
+              // data is specific to the API
+              name.innerHTML = row.name; 
+              id.innerHTML = row.uid; 
+              age.innerHTML = row.age; 
+              email.innerHTML = row.email;
+              role.innerHTML = row.role;
+
+              const editCell =  document.createElement("td");
+              const editButton = document.createElement("button");
+              editButton.innerHTML = "Edit";
+              editButton.addEventListener("click", editUser);
+              editCell.appendChild(editButton);
+    
+              const deleteCell =  document.createElement("td");
+              const deleteButton = document.createElement("button");
+              deleteButton.innerText = "Delete";
+              deleteButton.addEventListener("click", () => deleteUser(row.id, row));
+              deleteCell.appendChild(deleteButton);
+
+
+              // this builds td's into tr
+              tr.appendChild(name);
+              tr.appendChild(id);
+              tr.appendChild(age);
+              tr.appendChild(email);
+              tr.appendChild(role);
+              tr.appendChild(editCell);
+              tr.appendChild(deleteButton);
+              tr.setAttribute("data-id", row.id);
+              // append the row to table
+
+              resultContainer.appendChild(tr);
+
+
+              
+            }
+        })
+    })
+    // catch fetch errors (ie ACCESS to server blocked)
+    .catch(err => {
+      console.error(err);
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.innerHTML = err + ": " + url;
+      tr.appendChild(td);
+      resultContainer.appendChild(tr);
+    });
+  }
+
+  window.fetchUsers = fetchUsers;
+
+
+  
+  function editUser(event) {
+		const id = event.currentTarget.parentElement.parentElement.getAttribute("data-id");
+		document.getElementById("editId").value = id;
+
+		const form = document.getElementById("editForm");
+		const user = users.find((u) => u.id == id);
+
+		form.querySelector("#usn").value = user.uid;
+		form.querySelector("#name").value = user.name;
+    form.querySelector("#email").value = user.email;
+
+
+    document.getElementById('id01').style.display='block';
+	}
+
+	// Fetch users and ensure close modal interaction
+	document.addEventListener("DOMContentLoaded", function () {
+		//fetchUsers();
+	});
+
+	
+</script>
+
+
+<div id="id01" class="modal">
+  <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
+  <form class="modal-content" id="editForm"  action="javascript:submitEdit()" >
+    <div class="container">
+      <h1>Edit </h1>
+      <hr>
+      <input type="hidden" id="editId" name="editId" />
+      <label for="username"><b>Username</b></label>
+      <input type="text" placeholder="Enter UserName" name="usn" id="usn" required>
+
+      <label for="name"><b>name</b></label>
+      <input type="text" placeholder="Enter Name" name="name" id="name" required>
+
+
+      <label for="email"><b>Email</b></label>
+      <input type="text" placeholder="Enter Email" name="email" id="email" required>
+
+
+      <div class="clearfix">
+        <button type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">Cancel</button>
+        <button type="submit" class="signupbtn" id="signup-form-submit">Update</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+
+  
+  function submitEdit() {
+    const url = 'http://127.0.0.1:8199/api/users/';
+
+    const id =  document.getElementById("editId").value;
+  
+  
+    // Set the body of the request to include login data from the DOM
+    const body = {
+      name: document.getElementById("name").value,
+      uid: document.getElementById("usn").value,
+
+      email: document.getElementById("email").value,
+      
+    };
+        fetch(`${url}${id}`, {
+          method: "PUT",
+          mode: 'cors', // no-cors, *cors, same-origin
+          cache: 'default', // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: 'include', // include, same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }).then((response) => {
+          if (response.ok) {
+            // Update the corresponding row in the table
+            const row = document.querySelector(`tr[data-id='${id}']`);
+            row.cells[0].innerText = name;
+            row.cells[1].innerText = uid;
+  
+          
+            // Show an alert indicating success
+            alert("User information updated successfully.");
+            window.location.reload(true) 
+          }
+        });
+  
+        document.getElementById('id01').style.display='none';
+    }
+  
+    function deleteUser(id, row) {
+      const url = 'http://127.0.0.1:8199/api/users/';
+      const confirmation = prompt('Type "DELETE" to confirm.');
+      if (confirmation === "DELETE") {
+        fetch(`${url}${id}`, {
+          method: "DELETE",
+        })
+          .then(() => {
+            alert("User deleted successfully");
+            window.location.reload(true) 
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    }
+</script>
+
+
+
+
+<script>
+  // Get the modal
+  var modal = document.getElementById('id01');
+
+  const signupForm = document.getElementById("signup-form");
+  const signupButton = document.getElementById("signup-form-submit");
+
+  async function signup_user() {
+     // Set Authenticate endpoint
+     //const url = 'http://127.0.0.1:8199/api/users/create';
+
+     const url = 'http://127.0.0.1:8199/api/users/';
+  
+     // Set the body of the request to include login data from the DOM
+     const body = {
+         name: document.getElementById("name").value,
+         uid: document.getElementById("usn").value,
+         password: document.getElementById("psw").value,
+         email: document.getElementById("email").value,
+         
+     };
+
+        // Change options according to Authentication requirements
+        const authOptions = {
+         method: 'POST', // Override the method property
+         mode: 'cors', // no-cors, *cors, same-origin
+         cache: 'default', // *default, no-cache, reload, force-cache, only-if-cached
+         credentials: 'include', // include, same-origin, omit
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body:  JSON.stringify(body),
+     };
+
+       // Fetch JWT
+       fetch(url, authOptions)
+       .then(response2 => {
+           // handle error response from Web API
+          const data = response2.json();
+          if (response2.ok) {
+            alert("You have successfully signUp.");
+            modal.style.display = "none";
+            window.location.reload(true) 
+            
+          } else if (response2.status === 401) {
+            alert("You have error signUp.");
+          } else if (response2.status === 403) {
+            alert("You have error signUp.");
+          } else if (response2.status === 404) {
+            alert("You have error signUp.");
+          }else{
+            alert("You have error signUp.");
+          }  
+       })
+       // catch fetch errors (ie ACCESS to server blocked)
+       .catch(err => {
+           console.error(err);
+       });
+
+  }  
+  window.signup_user = signup_user;
+  </script>
